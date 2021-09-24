@@ -23,9 +23,7 @@ class ParserFile:
         self.price_db = {'Наименование': [], 'Цена': [], 'Цена2': [], 'дата': [], 'Вывод': []}
         self.price_db_exit = {'Наименование': [], 'Цена': []}
         self.price_dict_exit = {'Наименование': [], 'Цена': []}
-
-        self.price_dict_entrance = {'Наименование': [], 'Цена_1': [], 'Цена_2': [],
-                                    'Скидка_1': [], 'Скидка_2': []}
+        self.dict_price_entrance = {}
 
         self.price_db_update = {'Наименование': [], 'Цена': []}
 
@@ -36,20 +34,17 @@ class ParserFile:
         """
         if file is None:
             file = self.path_to_open
-
         print('-- Открываем файл')
         wb = openpyxl.load_workbook(file)  # открываем файл
         sheet = wb.active  # Выбираем активный лист
-        rows = sheet.max_row  # cols = self.sheet.max_column
+        rows = sheet.max_row + 1  # cols = self.sheet.max_column
+        cols = sheet.max_column + 1
 
-        for i in range(1, rows + 1):
-            self.price_dict_entrance['Наименование'].append(sheet.cell(row=i, column=1).value)
-            self.price_dict_entrance['Цена_1'].append(sheet.cell(row=i, column=2).value)
-            self.price_dict_entrance['Цена_2'].append(sheet.cell(row=i, column=3).value)
-            self.price_dict_entrance['Скидка_1'].append(sheet.cell(row=i, column=4).value)
-            self.price_dict_entrance['Скидка_2'].append(sheet.cell(row=i, column=5).value)
-
-        self.file_processing()
+        for row in range(1, rows):
+            name = sheet.cell(row=row, column=1).value
+            self.dict_price_entrance[name] = []
+            for col in range(2, cols):
+                self.dict_price_entrance[name].append(sheet.cell(row=row, column=col).value)
 
     def file_processing(self):
         """
