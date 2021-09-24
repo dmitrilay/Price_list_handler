@@ -1,0 +1,1 @@
+c:\Users\dmitr\AppData\Local\Programs\Python\Python38-32\python.exe d:\Parse\ParsFile\main.py %*

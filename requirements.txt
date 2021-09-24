@@ -1,0 +1,6 @@
+et-xmlfile==1.0.1
+openpyxl==3.0.7
+peewee==3.14.4
+openpyxl 3.0.7
+BeautifulSoup4 4.9.3
+Psycopg2-binary 2.8.6
