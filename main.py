@@ -18,8 +18,8 @@ for file_folder in os.listdir(PathOpen):
             pr1 = input_data.get(my_files)
             if pr1 is not None:
                 pm = ParserFile(path_to_open=u1, path_to_save=PathSave, db=pr1[0], mg=my_files)
-                pm.open_file()  # Открывам файл
+                # pm.open_file()  # Открывам файл
                 # pm.file_processing()  # Готовим данные к обработке
-                # pm.unloading_from_the_database()
+                pm.unloading_from_the_database()
                 # pm.find_in_the_database()
                 # os.replace(src=u1, dst=u2)

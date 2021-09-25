@@ -53,9 +53,10 @@ class ParserFile:
         print('-- Обрабатываем файл')
 
         if self.mg == 'mts.xlsx':
-            self.price_dict_exit = lgp.logical_price_processing_mts(self.price_dict_entrance)
+            self.price_dict_exit = lgp.logical_price_processing_mts(self.dict_price_entrance)
         elif self.mg == 'dns.xlsx':
-            self.price_dict_exit = lgp.logical_price_processing_dns(self.price_dict_entrance)
+            lgp.logical_price_processing_dns(self.dict_price_entrance)
+            # self.price_dict_exit =
         else:
             for i in range(0, len(self.price_dict_entrance['Наименование'])):
                 article = self.price_dict_entrance['Наименование'][i]
