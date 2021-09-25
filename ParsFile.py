@@ -16,15 +16,17 @@ import logical_price_processing as lgp
 class ParserFile:
     def __init__(self, path_to_open, path_to_save, db, mg):
         self.mg = mg
-        self.db = db
+        self.database = db
         self.path_to_open = path_to_open
         self.path_to_save = path_to_save
-        # self.price_db_new = {'Наименование': [], 'Цена': []}
+
         self.price_db = {}
         # self.price_db_exit = {'Наименование': [], 'Цена': []}
-        # self.price_dict_exit = {'Наименование': [], 'Цена': []}
+        self.price_dict_exit = {}
         self.dict_price_entrance = {}
-        # self.price_db_update = {'Наименование': [], 'Цена': []}
+
+        self.db_new_price = {}
+        self.db_update_price = {}
 
     def open_file(self, file=None):
         """
@@ -54,8 +56,7 @@ class ParserFile:
         if self.mg == 'mts.xlsx':
             self.price_dict_exit = lgp.logical_price_processing_mts(self.dict_price_entrance)
         elif self.mg == 'dns.xlsx':
-            lgp.logical_price_processing_dns(self.dict_price_entrance)
-            # self.price_dict_exit =
+            self.price_dict_exit = lgp.logical_price_processing_dns(self.dict_price_entrance)
         else:
             for i in range(0, len(self.price_dict_entrance['Наименование'])):
                 article = self.price_dict_entrance['Наименование'][i]
@@ -83,8 +84,8 @@ class ParserFile:
         Выгружаем данные из базы даннхы
         """
         print('-- Выгружаю данные из базы')
-        with self.db.db:
-            for data in self.db.PriceParser.select():
+        with self.database.db:
+            for data in self.database.PriceParser.select():
                 d = data
                 self.price_db[d.name] = [d.price_old, d.price_new, d.date_recording, d.display]
 
@@ -94,78 +95,52 @@ class ParserFile:
         изменнеие в цене. Если позиция не найдена то сохраняем
         в словарь для дальнейшей записи.
         """
-        stop = len(self.price_dict_exit['Наименование'])
-        for i in range(0, stop):
-            name_1 = self.price_dict_exit['Наименование'][i]
-            try:
-                index_db = self.price_db['Наименование'].index(name_1)
-                price_1 = int(self.price_db['Цена'][index_db])
-                price_2 = self.price_dict_exit['Цена'][i]
-                if price_2 < price_1:
-                    self.checking_data_types(name=name_1,
-                                             price=price_2,
-                                             record_type='update')
-            except Exception:
-                name_wr = self.price_dict_exit['Наименование'][i]
-                price_wr = self.price_dict_exit['Цена'][i]
-                self.checking_data_types(name=name_wr, price=price_wr, record_type='write')
+        db_p = self.price_db
+        for key, value in self.price_dict_exit.items():
+            price_new = int(value)
+            if db_p.get(key):
+                price_old = int(db_p[key][0])
+                if price_old > price_new:
+                    self.db_update_price[key] = price_new
+            else:
+                self.db_new_price[key] = price_new
 
-        self.writing_file_db()
-        self.updating_the_database_price()
+    def import_db(self):
+        for name, price in self.dict_price_entrance.items():
+            self.db_new_price[name] = price[0]
 
-    def checking_data_types(self, name, price, record_type=None):
-        """
-        Привидение даннх к нужному формамату(int...)
-        """
-        if record_type == 'write':
-            self.price_db_new['Наименование'].append(name)
-            self.price_db_new['Цена'].append(int(price))
-        if record_type == 'update':
-            self.price_db_update['Наименование'].append(name)
-            self.price_db_update['Цена'].append(int(price))
-
-    def updating_the_database_price(self, ):
-        """
-        Запись обработанных данных в базу
-        Обнавление цены
-        """
-        dt_now = datetime.datetime.now()
-        # query = PriceParser.update(price_new=0)
-        # query.execute()
-        print('-- Сохраняем обнавленные данные в базу данных')
-        length_for = len(self.price_db_update['Наименование'])
-        with self.db.db:
-            for i in range(0, length_for):
-                name = self.price_db_update['Наименование'][i]
-                price = self.price_db_update['Цена'][i]
-                product = self.db.PriceParser.get(self.db.PriceParser.name == name)
-                product.price_new = price
-                product.date_recording = dt_now
-                product.save()
-
-    def writing_file_db(self):
+    def writing_database_price(self):
         """
         Сохранение новых данных в базу
         """
-        data = []
-        i2, dt_now = 0, datetime.datetime.now()
-        stop_for = len(self.price_db_new['Наименование'])
-        if stop_for:
-            print('-- Сохраняем новые данные в базу')
-        for i in range(0, stop_for):
-            name = self.price_db_new['Наименование'][i]
-            price = self.price_db_new['Цена'][i]
-            data.append({'name': name,
-                         'price_old': price,
-                         'price_new': 0,
-                         'date_recording': dt_now,
-                         'display': 0, })
+        if len(self.db_new_price.items()):
+            print('-- Сохраняем новые данные в базу данных')
+            dt_now = datetime.datetime.now()
+            data = []
+            for name, price in self.db_new_price.items():
+                data.append(
+                    {'name': name, 'price_old': price, 'price_new': 0, 'date_recording': dt_now, 'display': 0, })
 
-            if i2 == 100 or i == stop_for - 1:
-                self.db.PriceParser.insert_many(data).execute()
-                i2 = 0
-                data = []
-            i2 = i2 + 1
+            with self.database.db.atomic():
+                self.database.PriceParser.insert_many(data).execute()
+
+    def updating_database_price(self):
+        """
+        Запись обработанных данных в базу. Обнавление цены
+        """
+        if len(self.db_update_price):
+            print('-- Обнавления данных')
+            local_dict, local_list = {}, []
+            for obj in self.database.PriceParser.select():
+                local_dict[obj.name] = obj
+
+            for name, price in self.db_update_price.items():
+                local_dict[name].price_new = price
+                local_dict[name].date_recording = datetime.datetime.now()
+                local_list.append(local_dict[name])
+
+            obj = self.database.PriceParser
+            obj.bulk_update(local_list, fields=['price_new', 'date_recording'])
 
     def writing_file_excel(self):
         """
@@ -197,3 +172,6 @@ class ParserFile:
                 columns += 1
             row += 1
         wb.save(filename=path_to_save)
+
+    def delete_db(self):
+        self.database.PriceParser.drop_table()

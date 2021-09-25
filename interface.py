@@ -30,7 +30,8 @@ if __name__ == "__main__":
                    '1) Обновить db из файл(данные парсинга)\n '
                    '2) Импорт базы данных на сервер\n '
                    '3) Выгрузить базу и сохранить в excel\n '
-                   '4) Exit\n ')
+                   '4) Удалить базу данных\n '
+                   '5) Exit\n ')
 
     if action == '1':
         text, i2 = '', 0
@@ -57,8 +58,18 @@ if __name__ == "__main__":
         pm.open_file(path_data)
         pm.unloading_from_the_database()
         pm.find_in_the_database()
+        pm.import_db()
+        pm.writing_database_price()  # Запись новых данных
     elif action == '3':
         pm.unloading_from_the_database()
         pm.writing_file_excel_db()
     elif action == '4':
+        action = input('Выбери действие:\n '
+                       '1) Подтвердите удаление данных\n '
+                       '2) Отмена\n ')
+        if action == 1:
+            pm.delete_db()
+        else:
+            pass
+    elif action == '5':
         pass
