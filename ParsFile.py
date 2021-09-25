@@ -188,12 +188,12 @@ class ParserFile:
         """
         wb = Workbook()
         ws = wb.active
-        stop_for = len(self.price_db['Наименование'])
-        for i in range(0, stop_for):
-            ws.cell(row=i + 1, column=1, value=self.price_db['Наименование'][i])
-            ws.cell(row=i + 1, column=2, value=self.price_db['Цена'][i])
-            ws.cell(row=i + 1, column=3, value=self.price_db['Цена2'][i])
-            ws.cell(row=i + 1, column=4, value=self.price_db['дата'][i])
-            ws.cell(row=i + 1, column=5, value=self.price_db['Вывод'][i])
-
+        row = 1
+        for key, value in self.price_db.items():
+            ws.cell(row=row, column=1, value=key)
+            columns = 2
+            for i in value:
+                ws.cell(row=row, column=columns, value=i)
+                columns += 1
+            row += 1
         wb.save(filename=path_to_save)
