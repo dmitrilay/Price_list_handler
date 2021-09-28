@@ -5,7 +5,8 @@ IP = '75.126.166.130'
 PORT = '1080'
 
 # PathOpen = os.path.normpath(os.getcwd() + '/data/mvideo.xlsx')
-PathOpen = os.path.normpath('C:/Users/dmitr/OneDrive/Документы/1_Parser')
+# PathOpen = os.path.normpath('C:/Users/dmitr/OneDrive/Документы/1_Parser')
+PathOpen = os.path.normpath('C:/Users/Honor/OneDrive/Документы/1_Parser')
 PathSave = os.path.normpath('rez_mvideo.xlsx')
 # PathOpen = os.path.normpath('D:/Parse/Mvideo/проект/mvideo.xlsx')
 # PathOpen = os.path.normpath('D:/Parse/Mvideo/проект/mvideo2.xlsx')

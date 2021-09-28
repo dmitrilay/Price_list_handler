@@ -1,4 +1,4 @@
-from ParsFile import *
+from main import *
 
 if __name__ == "__main__":
     list_db = [[db1, 'mvideo.xlsx'], [db2, 'mts.xlsx'], [db3, 'dns.xlsx'], [db4, 'eldorado.xlsx']]
